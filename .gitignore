@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Uploads
+webapp/uploads/*
+!webapp/uploads/.gitkeep
+
+# Models (Cho phép push model nhẹ lên GitHub)
+# saved_models/*.keras
+saved_models/best_model_saved/
+
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
