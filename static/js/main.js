@@ -84,15 +84,28 @@
         method: 'POST',
         body: formData
       });
-      const data = await response.json();
+
+      // Đọc raw text trước để tránh lỗi "Unexpected end of JSON input"
+      const text = await response.text();
+      if (!text || text.trim() === '') {
+        throw new Error('Server trả về response rỗng. Có thể server hết RAM hoặc đang khởi động lại.');
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        // Server trả về HTML (trang lỗi 500) thay vì JSON
+        throw new Error('Server gặp lỗi nội bộ. Vui lòng thử lại sau ít giây.');
+      }
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || 'Lỗi server');
+        throw new Error(data.error || `Lỗi server (HTTP ${response.status})`);
       }
 
       showPrediction(data);
     } catch (err) {
-      showError('Lỗi: ' + (err.message || 'Không thể kết nối server.'));
+      showError('❌ ' + (err.message || 'Không thể kết nối server.'));
       hideLoading();
     }
   }
