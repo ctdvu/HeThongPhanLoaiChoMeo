@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawAI – Phân Loại Chó & Mèo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-icon">🐾</span>
+      <span class="brand-name">PawAI</span>
+    </div>
+    <nav class="nav">
+      <a href="#upload-section">Nhận dạng</a>
+      <a href="#about-section">Về mô hình</a>
+    </nav>
+    <div class="model-badge {% if not model_ready %}badge-warn{% endif %}">
+      {% if model_ready %}
+        <span class="dot dot-green"></span> Model sẵn sàng
+      {% else %}
+        <span class="dot dot-red"></span> Model chưa load
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- ── HERO ────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Nhận Dạng <em>Chó & Mèo</em><br/>bằng Trí Tuệ Nhân Tạo</h1>
+    <p class="hero-sub">
+      Tải ảnh lên và CNN sẽ phân loại chỉ trong vài giây.<br/>
+      Độ chính xác: <strong>{{ stats.get('accuracy', 'N/A') }}</strong> &nbsp;|&nbsp;
+      AUC: <strong>{{ stats.get('auc', 'N/A') }}</strong>
+    </p>
+    <a href="#upload-section" class="btn-primary">Thử ngay →</a>
+  </div>
+  <div class="hero-emojis" aria-hidden="true">
+    <span>🐱</span><span>🐶</span><span>🐾</span>
+  </div>
+</section>
+
+<!-- ── UPLOAD SECTION ──────────────────────────────────────── -->
+<section id="upload-section" class="upload-section">
+  <div class="container">
+    <h2>Tải Ảnh Lên</h2>
+    <p class="section-sub">Hỗ trợ JPG, PNG, WEBP – tối đa 10 MB</p>
+
+    <!-- Drop Zone -->
+    <div id="drop-zone" class="drop-zone" role="button" tabindex="0"
+         aria-label="Kéo thả hoặc click để chọn ảnh">
+      <div class="drop-inner">
+        <div class="drop-icon">📁</div>
+        <p class="drop-text">Kéo &amp; thả ảnh vào đây</p>
+        <p class="drop-hint">hoặc</p>
+        <label class="btn-upload" for="file-input">Chọn từ máy tính</label>
+        <input type="file" id="file-input" name="file" accept="image/*" hidden />
+
+        <!-- Mobile camera -->
+        <label class="btn-camera" for="camera-input">📷 Chụp ảnh (Mobile)</label>
+        <input type="file" id="camera-input" name="file" accept="image/*"
+               capture="environment" hidden />
+      </div>
+    </div>
+
+    <!-- Preview + Result -->
+    <div id="result-area" class="result-area" hidden>
+      <div class="result-grid">
+        <!-- Preview -->
+        <div class="preview-card">
+          <h3>Ảnh tải lên</h3>
+          <img id="preview-img" src="" alt="Preview" class="preview-img" />
+          <button id="reset-btn" class="btn-reset">↩ Chọn ảnh khác</button>
+        </div>
+
+        <!-- Result -->
+        <div class="result-card" id="result-card">
+          <div id="loading" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Đang phân tích...</p>
+          </div>
+
+          <div id="prediction" class="prediction" hidden>
+            <div class="result-emoji" id="result-emoji"></div>
+            <h3 id="result-label" class="result-label"></h3>
+            <p id="result-conf" class="result-conf"></p>
+
+            <!-- Probability bars -->
+            <div class="prob-bars">
+              <div class="prob-row">
+                <span>🐱 Mèo</span>
+                <div class="prob-track">
+                  <div class="prob-fill fill-cat" id="bar-cat"></div>
+                </div>
+                <span id="val-cat" class="prob-val"></span>
+              </div>
+              <div class="prob-row">
+                <span>🐶 Chó</span>
+                <div class="prob-track">
+                  <div class="prob-fill fill-dog" id="bar-dog"></div>
+                </div>
+                <span id="val-dog" class="prob-val"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error toast -->
+    <div id="error-toast" class="error-toast" hidden></div>
+  </div>
+</section>
+
+<!-- ── ABOUT SECTION ──────────────────────────────────────── -->
+<section id="about-section" class="about-section">
+  <div class="container">
+    <h2>Về Mô Hình</h2>
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-icon">🧠</div>
+        <h3>CNN Tùy Chỉnh</h3>
+        <p>12+ layers với 4 khối tích chập, BatchNorm, Dropout và GlobalAveragePooling.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">📊</div>
+        <h3>Transfer Learning</h3>
+        <p>So sánh với VGG16 và MobileNetV2 pre-trained trên ImageNet.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">📈</div>
+        <h3>Đánh Giá Toàn Diện</h3>
+        <p>Accuracy, F1-Score, AUC-ROC, Confusion Matrix và Radar Chart.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">🚀</div>
+        <h3>Deploy on Render</h3>
+        <p>Flask + Gunicorn, responsive cho cả desktop & mobile.</p>
+      </div>
+    </div>
+
+    {% if stats %}
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-val">{{ stats.get('accuracy', '—') }}</div>
+        <div class="stat-lbl">Accuracy</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">{{ stats.get('auc', '—') }}</div>
+        <div class="stat-lbl">AUC-ROC</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">{{ stats.get('model_name', '—') }}</div>
+        <div class="stat-lbl">Best Model</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────────────────── -->
+<footer class="footer">
+  <p>🐾 PawAI · Phân Loại Chó &amp; Mèo bằng CNN · Tiểu Luận AI</p>
+  <p class="footer-sub">Được xây dựng với TensorFlow · Flask · Render</p>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
